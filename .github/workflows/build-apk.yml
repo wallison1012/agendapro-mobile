@@ -5,6 +5,10 @@ on:
     branches: [ main, master ]
   workflow_dispatch:
 
+defaults:
+  run:
+    working-directory: .
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -26,48 +30,37 @@ jobs:
     
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
-      with:
-        cmdline-tools-version: 9477386
-        packages: 'platform-tools platforms;android-34 build-tools;34.0.0'
-    
-    - name: Install Capacitor CLI
-      run: npm install -g @capacitor/cli
     
     - name: Install dependencies
       run: npm install
-      working-directory: ./mobile-app
     
     - name: Add Android platform
       run: |
         if [ ! -d "android" ]; then
           npx cap add android
         fi
-      working-directory: ./mobile-app
     
     - name: Sync Capacitor
       run: npx cap sync android
-      working-directory: ./mobile-app
     
     - name: Build APK
       run: |
+        cd android
         chmod +x gradlew
-        ./gradlew assembleDebug --stacktrace
-      working-directory: ./mobile-app/android
-      env:
-        ANDROID_HOME: ${{ env.ANDROID_HOME }}
+        ./gradlew assembleDebug
     
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: app-debug
-        path: mobile-app/android/app/build/outputs/apk/debug/app-debug.apk
+        path: android/app/build/outputs/apk/debug/app-debug.apk
         if-no-files-found: error
     
     - name: Create Release
       if: github.ref == 'refs/heads/main' && success()
       uses: softprops/action-gh-release@v1
       with:
-        files: mobile-app/android/app/build/outputs/apk/debug/app-debug.apk
+        files: android/app/build/outputs/apk/debug/app-debug.apk
         tag_name: v${{ github.run_number }}
         name: Release v${{ github.run_number }}
         body: |
