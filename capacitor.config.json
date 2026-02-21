@@ -1,0 +1,24 @@
+{
+  "appId": "com.agendapro.salao",
+  "appName": "AgendaPro",
+  "webDir": "www",
+  "server": {
+    "url": "https://agenda.ocmpro.com.br",
+    "cleartext": false
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 3000,
+      "launchAutoHide": true,
+      "backgroundColor": "#FDF8F5",
+      "androidSplashResourceName": "splash",
+      "androidScaleType": "CENTER_CROP"
+    }
+  },
+  "android": {
+    "buildOptions": {
+      "keystorePath": null,
+      "keystoreAlias": null
+    }
+  }
+}
