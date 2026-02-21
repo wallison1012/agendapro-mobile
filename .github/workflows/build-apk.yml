@@ -26,27 +26,45 @@ jobs:
     
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
+      with:
+        cmdline-tools-version: 9477386
+        packages: 'platform-tools platforms;android-34 build-tools;34.0.0'
+    
+    - name: Install Capacitor CLI
+      run: npm install -g @capacitor/cli
     
     - name: Install dependencies
-      run: |
-        cd mobile-app
-        npm install
+      run: npm install
+      working-directory: ./mobile-app
     
-    - name: Build with Capacitor
+    - name: Add Android platform
       run: |
-        cd mobile-app
-        npx cap sync android
-        cd android
-        ./gradlew assembleDebug
+        if [ ! -d "android" ]; then
+          npx cap add android
+        fi
+      working-directory: ./mobile-app
+    
+    - name: Sync Capacitor
+      run: npx cap sync android
+      working-directory: ./mobile-app
+    
+    - name: Build APK
+      run: |
+        chmod +x gradlew
+        ./gradlew assembleDebug --stacktrace
+      working-directory: ./mobile-app/android
+      env:
+        ANDROID_HOME: ${{ env.ANDROID_HOME }}
     
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: app-debug
         path: mobile-app/android/app/build/outputs/apk/debug/app-debug.apk
+        if-no-files-found: error
     
     - name: Create Release
-      if: github.ref == 'refs/heads/main'
+      if: github.ref == 'refs/heads/main' && success()
       uses: softprops/action-gh-release@v1
       with:
         files: mobile-app/android/app/build/outputs/apk/debug/app-debug.apk
